@@ -54,3 +54,65 @@ if __name__ == "__main__":
     print("Tokenized Output:")
     for token, token_type in tokenized_output:
       print(f"{token} : {token_type}")
+        
+- - - - - - - - - - - - - - - - - - -  - - - - - - -VERSION 2
+
+import re
+
+def tokenize_statement(statement):
+    # Add tokenization logic here. For example:
+    tokens = []
+    for word in statement.split():
+        if word in ['+', '-', '*', '/', '%', '**', '=']:
+            tokens.append((word, "Operator"))
+        elif word in ['(', ')', '[', ']', '{', '}']:
+            tokens.append((word, "Delimiter"))
+        else:
+            tokens.append((word, "Operand"))
+    return tokens
+
+def is_valid_statement(tokens):
+    stack = []
+    operators = ['+', '-', '*', '/', '%', '**', '=']
+    invalid_operators = ['***', '****']
+
+    for token, token_type in tokens:
+        if token_type == "Delimiter":
+            if token in "([{":
+                stack.append(token)
+            elif token in ")]}":
+                if not stack:
+                    return False, "Unmatched parenthesis"
+                opening = stack.pop()
+                if (token == ')' and opening != '(') or \
+                   (token == ']' and opening != '[') or \
+                   (token == '}' and opening != '{'):
+                    return False, "Mismatched parenthesis"
+        elif token_type == "Operator":
+            if token in operators:
+                if len(tokens) == 1:
+                    return False, "Missing operand"
+                if token in "+-*/%=" and (tokens.index((token,token_type)) + 1) == len(tokens):
+                    return False, "Missing operand"
+
+            if token in invalid_operators:
+                    return False, "Invalid operator"
+
+    if stack:
+        return False, "Unmatched parenthesis"
+    return True, "Valid"
+
+if __name__ == "__main__":
+    statement = input("Enter a statement: ")
+    tokenized_output = tokenize_statement(statement)
+
+    print("Tokenized Output:")
+    for token, token_type in tokenized_output:
+        print(f"{token} : {token_type}")
+
+    is_valid, message = is_valid_statement(tokenized_output)
+    if is_valid:
+        print(f"{statement} is valid")
+    else:
+        print(f"{statement} is not valid ({message})")
+        
