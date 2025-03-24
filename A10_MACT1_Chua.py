@@ -116,3 +116,95 @@ if __name__ == "__main__":
     else:
         print(f"{statement} is not valid ({message})")
         
+- --- -- - - - - - - - - -  - - - - - - - - -  - - - - - - --  # 3rd version
+
+
+import re
+
+def tokenize_statement(statement):
+
+    tokens = []
+
+    keywords = r"\b(if|else|while|for|return|def|class|import|print)\b"
+    identifiers = r"\b[a-zA-Z_][a-zA-Z0-9_]*\b"
+    operators = r"(\+|-|\*|/|=|==|!=|>|<|>=|<=|%|\*\*)"
+    int_literals = r"\b\d+\b"
+    float_literals = r"\b\d+\.\d+\b"
+    string_literals = r"\"[^\"]*\"|\'[^\']*\'"
+    delimiters = r"(\(|\)|\[|\]|\{|\}|,|;)"
+
+    pattern = "|".join([keywords, identifiers, operators, int_literals, float_literals, string_literals, delimiters])
+
+    for match in re.finditer(pattern, statement):
+        token = match.group(0)
+        if re.match(keywords, token):
+            token_type = "Keyword"
+        elif re.match(identifiers, token):
+            token_type = "Identifier"
+        elif re.match(operators, token):
+            token_type = "Operator"
+        elif re.match(int_literals, token):
+            token_type = "Integer Literal"
+        elif re.match(float_literals, token):
+            token_type = "Float Literal"
+        elif re.match(string_literals, token):
+            token_type = "String Literal"
+        elif re.match(delimiters, token):
+            token_type = "Delimiter"
+        else:
+            token_type = "Unknown"
+
+        tokens.append((token, token_type))
+
+    return tokens
+
+def is_valid_statement(tokens):
+    stack = []
+    operators = ['+', '-', '*', '/', '%', '**', '=']
+    invalid_operators = ['***', '****']
+
+    for token, token_type in tokens:
+        if token_type == "Delimiter":
+            if token in "([{":
+                stack.append(token)
+            elif token in ")]}":
+                if not stack:
+                    return False, "Unmatched parenthesis"
+                opening = stack.pop()
+                if (token == ')' and opening != '(') or \
+                   (token == ']' and opening != '[') or \
+                   (token == '}' and opening != '{'):
+                    return False, "Mismatched parenthesis"
+        elif token_type == "Operator":
+            if token in operators:
+                if len(tokens) == 1:
+                    return False, "Missing operand"
+                if token in "+-*/%=" and (tokens.index((token,token_type)) + 1) == len(tokens):
+                    return False, "Missing operand"
+
+            if token in invalid_operators:
+                    return False, "Invalid operator"
+
+    if stack:
+        return False, "Unmatched parenthesis"
+    return True, "Valid"
+
+if __name__ == "__main__":
+    statement = input("Enter a statement: ")
+    tokenized_output = tokenize_statement(statement)
+
+    print("Tokenized Output:")
+    for token, token_type in tokenized_output:
+      print(f"{token} : {token_type}")
+
+    is_valid, message = is_valid_statement(tokenized_output)
+    if is_valid:
+        print(f"{statement} is valid")
+    else:
+        print(f"{statement} is not valid ({message})")
+
+
+
+
+
+
